@@ -41,25 +41,27 @@ const handleSubmit = inputData => {
 };
 
 useEffect(() => {
-  if (pageNr !== 1) {
-    fetchImages();
+  const fetchImages = () => {
+    getImages(inputData, pageNr)
+      .then(({ hits }) => {
+        setImages(prevImages => [...prevImages, ...hits]);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  if (pageNr === 1) {
+    return;
   }
 
-}, [pageNr]);
+  fetchImages();
+}, [inputData, pageNr]);
 
 const handleClickMore = () => {
 setPageNr(pageNr + 1);
 };
 
-const fetchImages = () => {
-  getImages(inputData, pageNr)
-    .then(({ hits }) => {
-      setImages(prevImages => [...prevImages, ...hits]);
-    })
-    .catch(error => {
-      console.log(error);
-    });
-};
 
 const handleImageClick = e => {
 setModalOpen(true);
