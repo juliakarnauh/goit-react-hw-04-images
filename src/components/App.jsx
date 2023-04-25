@@ -8,91 +8,86 @@ import { RotateLoader } from 'react-spinners';
 import { Modal } from './Modal/Modal';
 import Notiflix from 'notiflix';
 
-export const App = ()=> {
-const [images, setImages] = useState([]);
-const [inputData, setInputData] = useState('');
-const [loading, setLoading] = useState(false);
-const [modalOpen, setModalOpen] = useState(false);
-const [modalImg, setModalImg] = useState('');
-const [modalAlt, setModalAlt] = useState('');
-const [totalHits, setTotalHits] = useState(0);
-const [pageNr, setPageNr] = useState(1);
+export const App = () => {
+  const [images, setImages] = useState([]);
+  const [inputData, setInputData] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalImg, setModalImg] = useState('');
+  const [modalAlt, setModalAlt] = useState('');
+  const [totalHits, setTotalHits] = useState(0);
+  const [pageNr, setPageNr] = useState(1);
 
-const handleSubmit = inputData => {
-  setLoading(true);
-  setImages([]);
-  setPageNr(1);
-  if (inputData.trim() === '') {
-    Notiflix.Notify.info('The field is empty, try again.');
-    setLoading(false);
-    return;
-  }
-  getImages(inputData, pageNr)
-    .then(({ totalHits, hits }) => {
-      if (hits.length < 1) {
-        Notiflix.Notify.failure('Sorry, image not found, try again.');
-      } else {
-        setImages(hits);
-        setInputData(inputData);
-        setTotalHits(totalHits);
-      }
-    })
-    .catch(error => console.log(error))
-    .finally(() => setLoading(false));
-};
-
-useEffect(() => {
-  const fetchImages = () => {
-    getImages(inputData, pageNr)
-      .then(({ totalHits, hits }) => {
-        if (pageNr === 1) {
-          setImages(hits);
-          setTotalHits(totalHits);
-        } else {
-          setImages(prevImages => [...prevImages, ...hits]);
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
+  const handleSubmit = inputData => {
+    setLoading(true);
+    setImages([]);
+    setPageNr(1);
+    if (inputData.trim() === '') {
+      Notiflix.Notify.info('The field is empty, try again.');
+      setLoading(false);
+      return;
+    }
+    setInputData(inputData);
   };
 
-  if (inputData.trim() === '') {
-    return;
-  }
+  useEffect(() => {
+    const fetchImages = () => {
+      setLoading(true);
+      getImages(inputData, pageNr)
+        .then(({ totalHits, hits }) => {
+          if (pageNr === 1) {
+            setImages(hits);
+            setTotalHits(totalHits);
+          } else {
+            setImages(prevImages => [...prevImages, ...hits]);
+          }
+          setLoading(false);
+        })
+        .catch(error => {
+          console.log(error);
+          setLoading(false);
+        });
+    };
 
-  fetchImages();
-}, [inputData, pageNr]);
+    if (inputData.trim() === '') {
+      return;
+    }
 
-const handleClickMore = () => {
-  setPageNr(prevPageNr => prevPageNr + 1);
+    fetchImages();
+  }, [inputData, pageNr]);
+
+  const handleClickMore = () => {
+    if (totalHits > images.length) {
+      setPageNr(prevPageNr => prevPageNr + 1);
+    }
   };
 
-const handleImageClick = e => {
-setModalOpen(true);
-setModalAlt(e.target.alt);
-setModalImg(e.target.name);
-};
+  const handleImageClick = e => {
+    setModalOpen(true);
+    setModalAlt(e.target.alt);
+    setModalImg(e.target.name);
+  };
 
-const handleModalClose = () => {
-setModalOpen(false);
-setModalImg('');
-setModalAlt('');
-};
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setModalImg('');
+    setModalAlt('');
+  };
 
-return (
-<AppDiv>
-<Searchbar onSubmit={handleSubmit} />
-{loading && <RotateLoader />}
-<ImageGallery onImageClick={handleImageClick} images={images} />
-  {totalHits > 12 && totalHits > images.length && (
-    <Button onClick={handleClickMore} />
-  )}
-  {modalOpen && (
-    <Modal src={modalImg} alt={modalAlt} handleClose={handleModalClose} />
-  )}
-</AppDiv>);
-}
+  return (
+    <AppDiv>
+      <Searchbar onSubmit={handleSubmit} />
+      {loading && <RotateLoader />}
+      <ImageGallery onImageClick={handleImageClick} images={images} />
+      {totalHits > 12 && totalHits > images.length && (
+        <Button onClick={handleClickMore} />
+      )}
+      {modalOpen && (
+        <Modal src={modalImg} alt={modalAlt} handleClose={handleModalClose} />
+      )}
+    </AppDiv>
+  );
+};
 // import { Component } from 'react';
 // import { Searchbar } from './Searchbar/Searchbar';
 // import { getImages } from '../service/imagesAPI';
