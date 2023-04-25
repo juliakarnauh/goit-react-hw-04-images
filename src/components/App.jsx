@@ -21,6 +21,7 @@ const [pageNr, setPageNr] = useState(1);
 const handleSubmit = inputData => {
   setLoading(true);
   setImages([]);
+  setPageNr(1);
   if (inputData.trim() === '') {
     Notiflix.Notify.info('The field is empty, try again.');
     setLoading(false);
@@ -43,15 +44,20 @@ const handleSubmit = inputData => {
 useEffect(() => {
   const fetchImages = () => {
     getImages(inputData, pageNr)
-      .then(({ hits }) => {
-        setImages(prevImages => [...prevImages, ...hits]);
+      .then(({ totalHits, hits }) => {
+        if (pageNr === 1) {
+          setImages(hits);
+          setTotalHits(totalHits);
+        } else {
+          setImages(prevImages => [...prevImages, ...hits]);
+        }
       })
       .catch(error => {
         console.log(error);
       });
   };
 
-  if (pageNr === 1) {
+  if (inputData.trim() === '') {
     return;
   }
 
@@ -59,9 +65,8 @@ useEffect(() => {
 }, [inputData, pageNr]);
 
 const handleClickMore = () => {
-setPageNr(pageNr + 1);
-};
-
+  setPageNr(prevPageNr => prevPageNr + 1);
+  };
 
 const handleImageClick = e => {
 setModalOpen(true);
